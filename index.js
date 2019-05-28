@@ -30,24 +30,69 @@ server.get("/hobbit", (req, res) => {
 });
 
 server.post("/api/users", (req, res) => {
-    if (!req.body.name || !req.body.bio) {
-      return res
-        .status(400)
-        .json({ errorMessage: "Please provide a name and bio for the user." });
-    }
-  
-    db.insert({
-      name: req.body.name,
-      bio: req.body.bio,
-      created_at: Date.now(),
-      updated_at: Date.now()
+  if (!req.body.name || !req.body.bio) {
+    return res
+      .status(400)
+      .json({ errorMessage: "Please provide a name and bio for the user." });
+  }
+
+  db.insert({
+    name: req.body.name,
+    bio: req.body.bio,
+    created_at: Date.now(),
+    updated_at: Date.now()
+  })
+    .then(id => res.status(201).json(id))
+    .catch(error =>
+      res.status(500).json({
+        error: "There was an error while saving the user to the database."
+      })
+    );
+});
+
+server.delete("/api/users/:id", (req, res) => {
+  const id = Number(req.params.id);
+
+  db.findById(id)
+    .then(user => {
+      if (typeof user === "Array" && user.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "The user with the specified ID does not exist." });
+      }
+      db.remove(id)
+        .then(n => res.status(200).json(user[0]))
+        .catch(error =>
+          res
+            .status(500)
+            .json({ error: "The users information could not be retrieved." })
+        );
     })
-      .then(id => res.status(201).json(id))
+    .catch(error =>
+      res
+        .status(500)
+        .json({ error: "The users information could not be removed." })
+    );
+});
+
+server.put("/api/users/:id", (req, res) => {
+    const id = Number(req.params.id);
+  
+    db.update(id, {
+      name: req.body.name,
+      bio: req.body.bio
+    })
+      .then(n => {
+        db.findById(id)
+          .then(user => res.status(200).json(user[0]))
+          .catch(error =>
+            res
+              .status(500)
+              .json({ error: "The user information could not be retrieved" })
+          );
+      })
       .catch(error =>
-        res.status(500).json({
-          error: "There was an error while saving the user to the database."
-        })
+        res.status(500).json({ error: "The user couldn't be updated." })
       );
-  });
 
 server.listen(8000, () => console.log("API is running..."));
