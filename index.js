@@ -2,9 +2,9 @@
 const express = require("express");
 const server = express();
 const db = require("./data/db");
-const bodyParser = require("body-parser");
+const cors =require("cors")
 
-server.use(bodyParser.json());
+server.use(express.json());
 server.use(cors());
 
 server.get("/", (req, res) => {
@@ -16,14 +16,10 @@ server.get("/hobbit", (req, res) => {
     {
       name: "Samwise Gamgee",
       bio: "Gardener and poet. Married to Rose Cotton",
-      created_at: new Date().toLocaleString(),
-      updated_at: new Date().toLocaleString()
     },
     {
       name: "Frodo Baggins",
       bio: "The ring bearer",
-      created_at: new Date().toLocaleString(),
-      updated_at: new Date().toLocaleString()
     }
   ];
 
@@ -40,8 +36,8 @@ server.post("/api/users", (req, res) => {
   db.insert({
     name: req.body.name,
     bio: req.body.bio,
-    created_at: Date.now(),
-    updated_at: Date.now()
+    created_at: Date.now().toLocaleString(),
+    updated_at: Date.now().toLocaleString()
   })
     .then(id => res.status(201).json(id))
     .catch(error =>
@@ -95,6 +91,7 @@ server.put("/api/users/:id", (req, res) => {
       .catch(error =>
         res.status(500).json({ error: "The user could not be modified." })
       );
+});
 
 
 server.get("/api/users", (req, res) => {
@@ -124,4 +121,4 @@ server.get("/api/users", (req, res) => {
       );
   });
 
-server.listen(8000, () => console.log("API is running..."));
+  server.listen(8000, () => console.log("API is running..."));
