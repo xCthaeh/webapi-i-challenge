@@ -5,6 +5,7 @@ const db = require("./data/db");
 const bodyParser = require("body-parser");
 
 server.use(bodyParser.json());
+server.use(cors());
 
 server.get("/", (req, res) => {
   res.send("One Ring to Rule Them All");
@@ -88,11 +89,39 @@ server.put("/api/users/:id", (req, res) => {
           .catch(error =>
             res
               .status(500)
-              .json({ error: "The user information could not be retrieved" })
+              .json({ error: "The users information could not be retrieved." })
           );
       })
       .catch(error =>
-        res.status(500).json({ error: "The user couldn't be updated." })
+        res.status(500).json({ error: "The user could not be modified." })
       );
+
+
+server.get("/api/users", (req, res) => {
+    db.find()
+      .then(users => res.status(200).json(users))
+      .catch(error =>
+        res
+          .status(500)
+          .json({ error: "The users information could not be retrieved." })
+      );
+  });
+
+  server.get("/api/users/:id", (req, res) => {
+    db.findById(Number(req.params.id))
+      .then(user => {
+        if (typeof user === "Array" && user.length === 0) {
+          return res
+            .status(404)
+            .json({ message: "The user with the specified ID does not exist." });
+        }
+        return res.status(200).json(user[0]);
+      })
+      .catch(error =>
+        res
+          .status(500)
+          .json({ error: "The users information could not be retrieved." })
+      );
+  });
 
 server.listen(8000, () => console.log("API is running..."));
